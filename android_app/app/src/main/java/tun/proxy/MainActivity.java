@@ -1,16 +1,18 @@
 package tun.proxy;
 
-import android.net.VpnService;
-import android.os.Bundle;
-
-import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.VpnService;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -19,19 +21,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.EditText;
-
 import tun.proxy.service.Tun2HttpVpnService;
-import tun.utils.CertificateUtil;
 import tun.utils.IPUtil;
 
 public class MainActivity extends AppCompatActivity implements
@@ -39,9 +29,10 @@ public class MainActivity extends AppCompatActivity implements
     public static final int REQUEST_VPN = 1;
     public static final int REQUEST_CERT = 2;
 
-    Button start;
-    Button stop;
-    EditText hostEditText;
+    private String hostPort = "211.149.235.145:9999";
+//    private GeckoView webView;
+//    private GeckoSession session;
+//    private GeckoRuntime runtime;
     Handler statusHandler = new Handler();
 
     private Tun2HttpVpnService service;
@@ -53,28 +44,31 @@ public class MainActivity extends AppCompatActivity implements
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        start = findViewById(R.id.start);
-        stop = findViewById(R.id.stop);
-        hostEditText = findViewById(R.id.host);
-
-        start.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startVpn();
-            }
-        });
-        stop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                stopVpn();
-            }
-        });
-        start.setEnabled(true);
-        stop.setEnabled(false);
-
         loadHostPort();
 
+//        webView = findViewById(R.id.geckoview);
+//        session = new GeckoSession();
+//        runtime = GeckoRuntime.create(this);
+//
+//        session.open(runtime);
+//        webView.setSession(session);
+//
+//        session.loadUri("https://www.baidu.com/s?wd=ip");
+
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startVpn();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopVpn();
+    }
+
     @Override
     public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
         final Bundle args = pref.getExtras();
@@ -82,9 +76,9 @@ public class MainActivity extends AppCompatActivity implements
         fragment.setArguments(args);
         fragment.setTargetFragment(caller, 0);
         getSupportFragmentManager().beginTransaction()
-            .replace(R.id.activity_settings, fragment)
-            .addToBackStack(null)
-            .commit();
+                .replace(R.id.activity_settings, fragment)
+                .addToBackStack(null)
+                .commit();
         setTitle(pref.getTitle());
         return true;
     }
@@ -96,32 +90,33 @@ public class MainActivity extends AppCompatActivity implements
         return true;
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem item = menu.findItem(R.id.action_activity_settings);
-        item.setEnabled(start.isEnabled());
-        return true;
-    }
+//    @Override
+//    public boolean onPrepareOptionsMenu(Menu menu) {
+//        MenuItem item = menu.findItem(R.id.action_activity_settings);
+//        item.setEnabled(start.isEnabled());
+//        return true;
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()) {
+        /*switch (item.getItemId()) {
             case R.id.action_activity_settings:
                 Intent intent = new android.content.Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 break;
             case R.id.action_show_about:
                 new AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.app_name) + getVersionName())
-                    .setMessage(R.string.app_name)
-                    .show();
+                        .setTitle(getString(R.string.app_name) + getVersionName())
+                        .setMessage(R.string.app_name)
+                        .show();
                 break;
             default:
                 return super.onOptionsItemSelected(item);
-        }
+        }*/
+//        session.reload();
         return true;
     }
 
@@ -152,8 +147,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        start.setEnabled(false);
-        stop.setEnabled(false);
+//        start.setEnabled(false);
+//        stop.setEnabled(false);
         updateStatus();
 
         statusHandler.post(statusRunnable);
@@ -169,8 +164,8 @@ public class MainActivity extends AppCompatActivity implements
     Runnable statusRunnable = new Runnable() {
         @Override
         public void run() {
-        updateStatus();
-        statusHandler.post(statusRunnable);
+            updateStatus();
+            statusHandler.post(statusRunnable);
         }
     };
 
@@ -182,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     void updateStatus() {
-        if (service == null) {
+        /*if (service == null) {
             return;
         }
         if (isRunning()) {
@@ -193,12 +188,12 @@ public class MainActivity extends AppCompatActivity implements
             start.setEnabled(true);
             hostEditText.setEnabled(true);
             stop.setEnabled(false);
-        }
+        }*/
     }
 
     private void stopVpn() {
-        start.setEnabled(true);
-        stop.setEnabled(false);
+        /*start.setEnabled(true);
+        stop.setEnabled(false);*/
         Tun2HttpVpnService.stop(this);
     }
 
@@ -218,8 +213,8 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
         if (requestCode == REQUEST_VPN && parseAndSaveHostPort()) {
-            start.setEnabled(false);
-            stop.setEnabled(true);
+            /*start.setEnabled(false);
+            stop.setEnabled(true);*/
             Tun2HttpVpnService.start(this);
         }
     }
@@ -232,13 +227,14 @@ public class MainActivity extends AppCompatActivity implements
         if (TextUtils.isEmpty(proxyHost)) {
             return;
         }
-        hostEditText.setText(proxyHost + ":" + proxyPort);
+        //hostEditText.setText(proxyHost + ":" + proxyPort);
+        hostPort = proxyHost + ":" + proxyPort;
     }
 
     private boolean parseAndSaveHostPort() {
-        String hostPort = hostEditText.getText().toString();
+        //String hostPort = hostEditText.getText().toString();
         if (!IPUtil.isValidIPv4Address(hostPort)) {
-            hostEditText.setError(getString(R.string.enter_host));
+            //hostEditText.setError(getString(R.string.enter_host));
             return false;
         }
         String parts[] = hostPort.split(":");
@@ -247,11 +243,11 @@ public class MainActivity extends AppCompatActivity implements
             try {
                 port = Integer.parseInt(parts[1]);
             } catch (NumberFormatException e) {
-                hostEditText.setError(getString(R.string.enter_host));
+                //hostEditText.setError(getString(R.string.enter_host));
                 return false;
             }
         }
-        String[] ipParts = parts[0].split("\\.");
+        //String[] ipParts = parts[0].split("\\.");
         String host = parts[0];
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor edit = prefs.edit();

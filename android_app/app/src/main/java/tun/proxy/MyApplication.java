@@ -2,6 +2,8 @@ package tun.proxy;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.util.Log;
+
 import androidx.preference.PreferenceManager;
 
 import java.util.HashSet;
@@ -21,6 +23,14 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        if (loadVPNMode() != VPNMode.ALLOW) {
+            storeVPNMode(VPNMode.ALLOW);
+            Set<String> ids = new HashSet<>();
+            String name = MyApplication.class.getPackage().getName();
+            Log.d("-----------------", "package = " + name);
+            ids.add(name);
+            storeVPNApplication(VPNMode.ALLOW, ids);
+        }
     }
 
     public enum VPNMode {DISALLOW, ALLOW};
